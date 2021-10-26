@@ -15,7 +15,7 @@ jobs:
       matrix:
         os: [ubuntu-18.04, macos-10.15, windows-2016]
         gcc: ['7-2017-q4', '10-2020-q4']
-        cmake: ['3.6.0', '3.21.3']
+        cmake: ['3.5.2', ''] # Empty means latest, at this time 3.22.0-rc1
       fail-fast: false
     runs-on: ${{ matrix.os }}
     name: ${{ matrix.os }}, gcc ${{ matrix.gcc }}, cmake ${{ matrix.cmake || 'latest'}}
