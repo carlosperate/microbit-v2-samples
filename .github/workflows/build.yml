@@ -1,9 +1,8 @@
 name: Build CODAL
 
 on:
-  workflow_dispatch:
   push:
-    branches: 'master'
+    branches: '*'
 
 jobs:
   build-py-script:
@@ -11,7 +10,7 @@ jobs:
       matrix:
         os: [ubuntu-18.04, macos-latest, windows-2016]
         gcc: ['7-2017-q4', 'latest']
-        cmake: ['3.6.0', '3.21.3']
+        cmake: ['3.6.0', 'latest']
       fail-fast: false
     runs-on: ${{ matrix.os }}
     name: ${{ matrix.os }}, gcc ${{ matrix.gcc }}, cmake ${{ matrix.cmake || 'latest'}}
