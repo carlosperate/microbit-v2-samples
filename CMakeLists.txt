@@ -95,7 +95,11 @@ endif()
 ####################
 
 SET(TOOLCHAIN ${device.toolchain})
-SET(TOOLCHAIN_FOLDER "./utils/cmake/toolchains/${device.toolchain}")
+# The CODAL_TOOLCHAIN environment variable overrides the target toolchain, e.g. CODAL_TOOLCHAIN=CLANG
+if("$ENV{CODAL_TOOLCHAIN}" STRGREATER "")
+    SET(TOOLCHAIN $ENV{CODAL_TOOLCHAIN})
+endif()
+SET(TOOLCHAIN_FOLDER "./utils/cmake/toolchains/${TOOLCHAIN}")
 
 # include toolchain file
 set(CMAKE_TOOLCHAIN_FILE "${TOOLCHAIN_FOLDER}/toolchain.cmake" CACHE PATH "toolchain file")
@@ -106,7 +110,7 @@ enable_language(ASM)
 
 # include compiler flags overrides
 include(${TOOLCHAIN_FOLDER}/compiler-flags.cmake)
-set(PLATFORM_INCLUDES_PATH "${PROJECT_SOURCE_DIR}/utils/cmake/toolchains/${device.toolchain}")
+set(PLATFORM_INCLUDES_PATH "${PROJECT_SOURCE_DIR}/utils/cmake/toolchains/${TOOLCHAIN}")
 
 file(MAKE_DIRECTORY "${PROJECT_SOURCE_DIR}/build")
 

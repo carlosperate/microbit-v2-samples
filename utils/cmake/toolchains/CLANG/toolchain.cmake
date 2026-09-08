@@ -1,35 +1,19 @@
-# Clang/LLVM is NOT the officialy supported toolchain for building Micro:Bit V2 CODAL applications.
-# This file serves to define an alternative compiler of which work has been put into making
-# compatible, but milage may vary in getting a working build. It is recommended to use 
-# ARM_GCC where possible, with that being said complete Clang are possible with some tweaking.
-# See compiler-flags.cmake
-
+# Clang/LLVM is NOT the officially supported toolchain for micro:bit V2 CODAL applications, ARM_GCC is.
+# This best-effort alternative targets LLVM toolchains that bundle bare-metal Arm runtimes, such as
+# Arm Toolchain for Embedded with its newlib-nano overlay. Select it with CODAL_TOOLCHAIN=CLANG.
 find_program(LLVM_RANLIB llvm-ranlib)
 find_program(LLVM_AR llvm-ar)
 find_program(CLANG clang)
-find_program(CLANG++ clang++)
+find_program(CLANGPP clang++)
 find_program(LLVM_OBJCOPY llvm-objcopy)
+find_program(LLVM_SIZE llvm-size)
 
-set(CMAKE_OSX_SYSROOT "/")
-set(CMAKE_OSX_DEPLOYMENT_TARGET "")
-
-set(CMAKE_SYSTEM_NAME "Generic")
-set(CMAKE_SYSTEM_VERSION "2.0.0")
-
-set(CODAL_TOOLCHAIN "CLANG")
-
-if(CMAKE_VERSION VERSION_LESS "3.5.0")
-    include(CMakeForceCompiler)
-    cmake_force_c_compiler("${CLANG}" GNU)
-    cmake_force_cxx_compiler("${CLANG++}" GNU)
-else()
-    # from 3.5 the force_compiler macro is deprecated: CMake can detect
-    # llvm-gcc as being a GNU compiler automatically
-	set(CMAKE_TRY_COMPILE_TARGET_TYPE "STATIC_LIBRARY")
-    set(CMAKE_C_COMPILER "${CLANG}")
-    set(CMAKE_CXX_COMPILER "${CLANG++}")
-endif()
-
+# Reuse the ARM_GCC settings with the LLVM tools. The archiver and ranlib are cache variables,
+# so they must be set before the include, the compilers are overridden after it.
 SET(CMAKE_AR "${LLVM_AR}" CACHE FILEPATH "Archiver")
 SET(CMAKE_RANLIB "${LLVM_RANLIB}" CACHE FILEPATH "rlib")
-set(CMAKE_CXX_OUTPUT_EXTENSION ".o")
+include("${CMAKE_CURRENT_LIST_DIR}/../ARM_GCC/toolchain.cmake")
+
+set(CODAL_TOOLCHAIN "CLANG")
+set(CMAKE_C_COMPILER "${CLANG}")
+set(CMAKE_CXX_COMPILER "${CLANGPP}")

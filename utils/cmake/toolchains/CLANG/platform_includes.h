@@ -1,10 +1,2 @@
-#ifndef PLATFORM_INCLUDES
-#define PLATFORM_INCLUDES
-
-#include <stdint.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdarg.h>
-#include <math.h>
-
-#endif
+// Identical to the ARM_GCC platform includes.
+#include "../ARM_GCC/platform_includes.h"

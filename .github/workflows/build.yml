@@ -68,3 +68,63 @@ jobs:
         with:
           name: MICROBIT-BLE-${{ matrix.os }}-gcc-${{ matrix.gcc }}-cmake-${{ matrix.cmake || 'latest' }}
           path: MICROBIT.hex
+
+  # LLVM is an experimental toolchain not officially supported.
+  # Using Arm Toolchain for Embedded (ATfE) version with its newlib-nano overlay
+  build-py-script-clang:
+    strategy:
+      matrix:
+        # Oldest and latest ATfE releases, https://github.com/arm/arm-toolchain/releases
+        atfe: ['20.1.0', '22.1.0']
+      fail-fast: false
+    runs-on: ubuntu-22.04
+    name: ubuntu-22.04, clang ATfE ${{ matrix.atfe }}
+    steps:
+      - uses: actions/checkout@v7
+      - name: Setup Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.8'
+      - name: Setup ATfE ${{ matrix.atfe }} with the newlib-nano overlay
+        working-directory: ${{ runner.temp }}
+        run: |
+          BASE_URL="https://github.com/arm/arm-toolchain/releases/download/release-${{ matrix.atfe }}-ATfE"
+          wget -q "${BASE_URL}/ATfE-${{ matrix.atfe }}-Linux-x86_64.tar.xz" \
+                  "${BASE_URL}/ATfE-${{ matrix.atfe }}-Linux-x86_64.tar.xz.sha256" \
+                  "${BASE_URL}/ATfE-newlib-nano-overlay-${{ matrix.atfe }}.tar.xz" \
+                  "${BASE_URL}/ATfE-newlib-nano-overlay-${{ matrix.atfe }}.tar.xz.sha256"
+          sha256sum -c "ATfE-${{ matrix.atfe }}-Linux-x86_64.tar.xz.sha256"
+          sha256sum -c "ATfE-newlib-nano-overlay-${{ matrix.atfe }}.tar.xz.sha256"
+          tar -xf "ATfE-${{ matrix.atfe }}-Linux-x86_64.tar.xz" -C "$HOME"
+          tar -xf "ATfE-newlib-nano-overlay-${{ matrix.atfe }}.tar.xz" -C "$HOME/ATfE-${{ matrix.atfe }}-Linux-x86_64"
+          echo "$HOME/ATfE-${{ matrix.atfe }}-Linux-x86_64/bin" >> "$GITHUB_PATH"
+      - name: Install Ninja via PyPI
+        run: python -m pip install ninja
+      - name: Check Versions
+        run: |
+          clang --version
+          cmake --version
+          ninja --version
+          python --version
+      - name: Build default project using build.py
+        run: CODAL_TOOLCHAIN=CLANG python build.py
+      - name: Upload hex file
+        uses: actions/upload-artifact@v7
+        with:
+          name: MICROBIT-clang-atfe-${{ matrix.atfe }}
+          path: MICROBIT.hex
+      - name: Prepare BLE example
+        run: |
+          rm codal.json
+          mv codal.ble.json codal.json
+          python -c "import pathlib; \
+            f=pathlib.Path('source/main.cpp'); \
+            f.write_text(f.read_text().replace('out_of_box_experience()', 'ble_test()'))"
+          cat codal.json
+      - name: Build BLE project using build.py
+        run: CODAL_TOOLCHAIN=CLANG python build.py --clean
+      - name: Upload BLE hex file
+        uses: actions/upload-artifact@v7
+        with:
+          name: MICROBIT-BLE-clang-atfe-${{ matrix.atfe }}
+          path: MICROBIT.hex

@@ -47,6 +47,17 @@ To omit the final output stage (for CI, for example) run without the `--output` 
 - In the root of this repository type `python build.py`
 - The hex file will be built `MICROBIT.hex` and placed in the root folder.
 
+## Building with Clang/LLVM (experimental)
+
+Arm GCC is the only officially supported toolchain, but an experimental Clang/LLVM toolchain definition is also included.
+It targets [Arm Toolchain for Embedded](https://github.com/arm/arm-toolchain/) (ATfE) with its `newlib-nano` overlay package also added to the toolchain.
+Add the ATfE `bin` directory to your `PATH` and select this toolchain with the `CODAL_TOOLCHAIN=CLANG` environment variable, starting from a clean build directory when switching toolchains:
+
+```shell
+rm -rf build
+CODAL_TOOLCHAIN=CLANG python build.py
+```
+
 # Developing
 You will find a simple main.cpp in the `source` folder which you can edit. CODAL will also compile any other C/C++ header files our source files with the extension `.h .c .cpp` it finds in the source folder.
 
